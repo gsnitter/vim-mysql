@@ -1,0 +1,2 @@
+#/bin/bash
+mysql --login-path=$1 $2 -B --column-names=0 --protocol=TCP -e 'show tables'

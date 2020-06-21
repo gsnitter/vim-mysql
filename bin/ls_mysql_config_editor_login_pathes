@@ -1,0 +1,2 @@
+#/bin/bash
+mysql_config_editor print --all | awk '/^\[/' | sed 's/^.//' | sed 's/.$//' | awk '!/^client$/'
