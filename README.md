@@ -12,3 +12,6 @@ Type `<leader>l` to choose a login-path as definded with `mysql_config_editor`.
 Type `<leader>d` to choose a database, database name will be inserted at cusor position if <leader>d was typed in insert mode.  
 Type `<leader>t`, equivalent for table.  
 Type `<leader>c`, equivalent for table column, but only in insert mode.  
+
+# Colored output
+For colored output use grc together with .grcat (put it to $HOME) from https://github.com/nitso/colour-mysql-console.

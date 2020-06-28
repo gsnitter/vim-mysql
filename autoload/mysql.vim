@@ -36,7 +36,8 @@ func! mysql#ListTables(insert)
             call mysql#displayError("Failed to list tables for database" . b:database .  " and Login-Path " . b:loginPath: " . result)
             return
         endif
-        call fzf#run({"source": s:basePath . '/bin/ls_tables ' . b:loginPath . ' ' . b:database, "sink": "MySQLSetTable", "options": ["--preview", s:basePath . '/bin/ls_columns ' . b:loginPath . ' ' . b:database . ' {}']})
+        let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:80%' --layout reverse"
+        call fzf#run({"source": s:basePath . '/bin/ls_tables ' . b:loginPath . ' ' . b:database, "sink": "MySQLSetTable", "window": {"width": 0.9, "height": 0.9}, "options": ["--preview", s:basePath . '/bin/desc_table ' . b:loginPath . ' ' . b:database . ' {}']})
     else
         call mysql#displayError("No database selected")
     endif
