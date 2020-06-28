@@ -1,19 +1,13 @@
 #/bin/bash
-echo TABLE $3 | tr a-z A-Z
+echo LOGIN-PATH: $1 | tr a-z A-Z
+echo DATABASE: $2 | tr a-z A-Z
+echo TABLE: $3 | tr a-z A-Z
 echo
 rowCount=`mysql --login-path=$1 $2 -B --column-names=0 --protocol=TCP -e "SELECT COUNT(*) FROM $3"`
 echo "Row count: $rowCount"
 
-if [ -f ~/.grcat ]; then
-    mysql --login-path=$1 $2 --raw --table --protocol=TCP -e "SHOW FULL COLUMNS FROM $3" | grcat ~/.grcat
-else
-    mysql --login-path=$1 $2 --raw --table --protocol=TCP -e "SHOW FULL COLUMNS FROM $3"
-fi
+mysql --login-path=$1 $2 --raw --table --protocol=TCP -e "SHOW FULL COLUMNS FROM $3"
 
 echo
 echo "For example:"
-if [ -f ~/.grcat ]; then
-    mysql --login-path=$1 $2 --raw --table --protocol=TCP -e "SELECT * FROM $3 LIMIT 1 \G" | tail -n +2 | grcat ~/.grcat
-else
-    mysql --login-path=$1 $2 --raw --table --protocol=TCP -e "SELECT * FROM $3 LIMIT 1 \G" | tail -n +2
-fi
+mysql --login-path=$1 $2 --raw --table --protocol=TCP -e "SELECT * FROM $3 LIMIT 1 \G" | tail -n +2

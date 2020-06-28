@@ -1,0 +1,8 @@
+#/bin/bash
+echo LOGIN-PATH: $1 | tr a-z A-Z
+echo DATABASE: $2 | tr a-z A-Z
+echo TABLE: $3 | tr a-z A-Z
+echo COLUMN: $4 | tr a-z A-Z
+echo
+
+mysql --login-path=$1 $2 --raw --table --protocol=TCP -e "SHOW FULL COLUMNS FROM $3 LIKE '$4' \G;"

@@ -36,8 +36,13 @@ func! mysql#ListTables(insert)
             call mysql#displayError("Failed to list tables for database" . b:database .  " and Login-Path " . b:loginPath: " . result)
             return
         endif
+
+        let previewCommand = s:basePath . '/bin/desc_table ' . b:loginPath . ' ' . b:database . ' {}'
+        if system("type grc 2> /dev/null 1> /dev/null; echo $?")==0
+            let previewCommand = previewCommand . ' | grcat ' . s:basePath . '/bin/grcat_config'
+        endif
         let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:80%' --layout reverse"
-        call fzf#run({"source": s:basePath . '/bin/ls_tables ' . b:loginPath . ' ' . b:database, "sink": "MySQLSetTable", "window": {"width": 0.9, "height": 0.9}, "options": ["--preview", s:basePath . '/bin/desc_table ' . b:loginPath . ' ' . b:database . ' {}']})
+        call fzf#run({"source": s:basePath . '/bin/ls_tables ' . b:loginPath . ' ' . b:database, "sink": "MySQLSetTable", "window": {"width": 0.9, "height": 0.9}, "options": ["--preview", previewCommand]})
     else
         call mysql#displayError("No database selected")
     endif
@@ -47,12 +52,19 @@ func! mysql#ListColumns(insert)
     let s:insert = a:insert
 
     if exists("b:table")
-        let result = system(s:basePath . '/bin/ls_columns ' . b:loginPath . ' ' . b:database . ' ' . b.table)
+        let result = system(s:basePath . '/bin/ls_columns ' . b:loginPath . ' ' . b:database . ' ' . b:table)
         if v:shell_error
-            call mysql#displayError("Failed to list columns for table " . b:table . " in database" . b:database .  " with Login-Path " . b:loginPath: " . result)
+            call mysql#displayError("Failed to list columns for table " . b:table . " in database " . b:database .  " with Login-Path " . b:loginPath: " . result)
             return
         endif
-        call fzf#run({"source": s:basePath . '/bin/ls_columns ' . b:loginPath . ' ' . b:database . ' ' . b:table, "sink": "MySQLSetColumn", "options": "--no-preview"})
+
+        let previewCommand = s:basePath . '/bin/desc_column ' . b:loginPath . ' ' . b:database . ' ' . b:table . ' {}'
+        if system("type grc 2> /dev/null 1> /dev/null; echo $?")==0
+            let previewCommand = previewCommand . ' | grcat ' . s:basePath . '/bin/grcat_config'
+        endif
+
+        call fzf#run({"source": s:basePath . '/bin/ls_columns ' . b:loginPath . ' ' . b:database . ' ' . b:table, "sink": "MySQLSetColumn", "window": {"width": 0.9, "height": 0.9}, "options": ["--preview", previewCommand]})
+
     else
         call mysql#displayError("No database selected")
     endif
