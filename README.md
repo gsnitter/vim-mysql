@@ -13,5 +13,7 @@ Type `<leader>d` to choose a database, database name will be inserted at cusor p
 Type `<leader>t`, equivalent for table.  
 Type `<leader>c`, equivalent for table column, but only in insert mode.  
 
+For executing commands, select them in visual mode, than type `<leader>m`. Note, that only full lines are executed and that a semincolon is needed to seperate them.
+
 # Colored output
-For colored output use grc together with .grcat (put it to $HOME) from https://github.com/nitso/colour-mysql-console.
+For colored output in table preview install grc, that is something like `apt install grc`.

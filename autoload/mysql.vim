@@ -1,8 +1,33 @@
-" TODO SNI: Nur zum Entwickeln
-autocmd! BufWritePost /home/snitter/.vim/pack/sni/start/mysql/autoload/mysql.vim source /home/snitter/.vim/pack/sni/start/mysql/autoload/mysql.vim
-
 let s:basePath = expand('<sfile>:p:h:h')
 let s:insert = v:true
+
+func! mysql#SetUpKeyMaps()
+    let g:debug="SetupKeyMaps"
+    nnoremap <buffer> <leader>l :call mysql#ListLoginPathes()<cr>
+    nnoremap <buffer> <leader>d :call mysql#ListDatabases(v:false)<cr>
+    nnoremap <buffer> <leader>t :call mysql#ListTables(v:false)<cr>
+
+    inoremap <buffer> <leader>d <esc>:call mysql#ListDatabases(v:true)<cr>
+    inoremap <buffer> <leader>t <esc>:call mysql#ListTables(v:true)<cr>
+    inoremap <buffer> <leader>c <esc>:call mysql#ListColumns(v:true)<cr>
+
+    vnoremap <buffer> M :call mysql#ExecuteQuery()<cr>
+endfunc
+
+func! mysql#LoadBufferVars()
+    let g:mysqlSettings = eval(g:MysqlSettings)
+    if has_key(g:mysqlSettings, expand("%:p"))
+        if has_key(g:mysqlSettings[expand("%:p")], "loginPath")
+            let b:loginPath=g:mysqlSettings[expand("%:p")]["loginPath"]
+        endif
+        if has_key(g:mysqlSettings[expand("%:p")], "database")
+            let b:database=g:mysqlSettings[expand("%:p")]["database"]
+        endif
+        if has_key(g:mysqlSettings[expand("%:p")], "table")
+            let b:table=g:mysqlSettings[expand("%:p")]["table"]
+        endif
+    endif
+endfunc
 
 func! mysql#ListLoginPathes()
     call fzf#run({"source": s:basePath . '/bin/ls_mysql_config_editor_login_pathes', "sink": "MySQLSetLoginPath", "options": "--no-preview"})
@@ -10,6 +35,11 @@ endfunc
 
 func! mysql#SetLoginPath(path)
     let b:loginPath = a:path
+    if !has_key(g:mysqlSettings, expand("%:p"))
+        let g:mysqlSettings[expand("%:p")] = {}
+    endif
+    let g:mysqlSettings[expand("%:p")]['loginPath'] = a:path
+    let g:MysqlSettings = string(g:mysqlSettings)
 endfunc
 
 func! mysql#ListDatabases(insert)
@@ -72,11 +102,15 @@ endfunc
 
 func! mysql#SetDatabase(database)
     let b:database = a:database
+    let g:mysqlSettings[expand("%:p")]['database'] = a:database
+    let g:MysqlSettings = string(g:mysqlSettings)
     call mysql#insert(a:database)
 endfunc
 
 func! mysql#SetTable(table)
     let b:table = a:table
+    let g:mysqlSettings[expand("%:p")]['table'] = a:table
+    let g:MysqlSettings = string(g:mysqlSettings)
     call mysql#insert(a:table)
 endfunc
 
@@ -97,7 +131,43 @@ func! mysql#insert(text)
 endfunc
 
 func! mysql#displayError(message)
-    let winid=popup_notification(a:message, #{ line: 5, col: 10, highlight: 'WarningMsg', title: '', time: 20000, maxheight: 10} )
-    hi MyPopupColor ctermbg=red guibg=red
-    call setwinvar(winid, '&wincolor', 'MyPopupColor')
+    if exists('*popup_notification')
+        let winid=popup_notification(a:message, #{ line: 5, col: 10, highlight: 'WarningMsg', title: '', time: 5000, maxheight: 10} )
+        hi MyPopupColor ctermbg=red guibg=red
+        call setwinvar(winid, '&wincolor', 'MyPopupColor')
+    else
+        echo a:message
+    endif
+endfunc
+
+func! mysql#ExecuteQuery() range
+    if !exists("b:database")
+        call mysql#displayError("No database selected")
+        return
+    endif
+
+    " Prepare the query
+    :write
+    let l:queryCommand = ".!cat " . expand("%:p") . ' | awk "NR >= ' . a:firstline . ' && NR <= ' . a:lastline . '"'
+    let l:queryCommand = l:queryCommand . " | mysql --login-path=" . b:loginPath . ' --database=' . b:database . ' --table'
+
+    " Close old buffer and open a new one below
+    silent! bdelete! mysql_result
+    execute "sp mysql_result"
+    exe "normal \<c-w>J"
+    exe "setlocal buftype=nofile modifiable"
+
+    " :highlight mysqlTableBorder ctermbg=darkred guibg=red ctermfg=black guifg=black
+    :highlight mysqlDefault ctermfg=green guifg=green
+    :call matchadd('mysqlDefault', '.*', 0)
+    :highlight mysqlTableBorder ctermfg=red guifg=red
+    call matchadd('mysqlTableBorder',  '\(^[+-]\+$\)\|^[|]\| | \| |$')
+    :highlight mysqlDefinition ctermfg=white guifg=white
+    call matchadd('mysqlDefinition',  '^\s*\w\+:')
+    call matchadd('mysqlDefinition',  '^\*\+')
+    call matchadd('mysqlDefinition', '\%2l\w\+', 20)
+
+    " Execute query inside new buffer and return
+    exe l:queryCommand
+    exe "normal \<c-w>k"
 endfunc
