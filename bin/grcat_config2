@@ -1,0 +1,11 @@
+regexp=.+
+colours=cyan
+-
+regexp=^\s*\[[\w\-_]+\]
+colours=green
+-
+regexp=^\w+ =
+colours=white
+-
+regexp=\*\*+
+colours=cyan

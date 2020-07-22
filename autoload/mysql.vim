@@ -30,7 +30,17 @@ func! mysql#LoadBufferVars()
 endfunc
 
 func! mysql#ListLoginPathes()
-    call fzf#run({"source": s:basePath . '/bin/ls_mysql_config_editor_login_pathes', "sink": "MySQLSetLoginPath", "options": "--no-preview"})
+    let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:80%' --layout reverse"
+    let previewCommand = 'mysql_config_editor print --login-path={}'
+    if system("type grc 2> /dev/null 1> /dev/null; echo $?")==0
+        let previewCommand = previewCommand . ' | grcat ' . s:basePath . '/bin/grcat_config2'
+    endif
+    let previewCommand = previewCommand . ' && echo && echo ------ && echo && mysql_config_editor print --all'
+    if system("type grc 2> /dev/null 1> /dev/null; echo $?")==0
+        let previewCommand = previewCommand . ' | grcat ' . s:basePath . '/bin/grcat_config2'
+    endif
+    call fzf#run({"source": s:basePath . '/bin/ls_mysql_config_editor_login_pathes', "sink": "MySQLSetLoginPath", "window": {"width": 0.9, "height": 0.9}, "options": ["--preview", previewCommand]})
+
 endfunc
 
 func! mysql#SetLoginPath(path)
@@ -51,7 +61,13 @@ func! mysql#ListDatabases(insert)
             call mysql#displayError("Login-Path " . b:loginPath . " failed: " . result)
             return
         endif
-        call fzf#run({"source": s:basePath . '/bin/ls_databases ' . b:loginPath, "sink": "MySQLSetDatabase", "options": ["--preview", s:basePath . '/bin/ls_tables ' . b:loginPath . ' {}']})
+
+        let previewCommand = s:basePath . '/bin/desc_database ' . b:loginPath . ' {}'
+        if system("type grc 2> /dev/null 1> /dev/null; echo $?")==0
+            let previewCommand = previewCommand . ' | grcat ' . s:basePath . '/bin/grcat_config'
+        endif
+        let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:80%' --layout reverse"
+        call fzf#run({"source": s:basePath . '/bin/ls_databases ' . b:loginPath, "sink": "MySQLSetDatabase", "window": {"width": 0.9, "height": 0.9}, "options": ["--preview", previewCommand]})
     else
         call mysql#displayError("No login path selected")
     endif
