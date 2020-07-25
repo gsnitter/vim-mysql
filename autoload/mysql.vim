@@ -171,6 +171,7 @@ func! mysql#ExecuteQuery() range
     silent! bdelete! mysql_result
     execute "sp mysql_result"
     exe "normal \<c-w>J"
+    set nowrap
     exe "setlocal buftype=nofile modifiable"
 
     " :highlight mysqlTableBorder ctermbg=darkred guibg=red ctermfg=black guifg=black
@@ -180,7 +181,7 @@ func! mysql#ExecuteQuery() range
     call matchadd('mysqlTableBorder',  '\(^[+-]\+$\)\|^[|]\| | \| |$')
     :highlight mysqlDefinition ctermfg=white guifg=white
     call matchadd('mysqlDefinition',  '^\s*\w\+:')
-    call matchadd('mysqlDefinition',  '^\*\+')
+    call matchadd('mysqlDefinition',  '^\*\+.*')
     call matchadd('mysqlDefinition', '\%2l\w\+', 20)
 
     " Execute query inside new buffer and return
