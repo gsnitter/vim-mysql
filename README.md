@@ -5,6 +5,10 @@
 Needs junegunn/fzf.vim for autocompletion and preview of login-pathes, databases, tables and columns.
 
 ## Basic Usage
+This plugin lets you select a login-path and a database to execute queries from within vim. Results of SELECT-querie are shown in a scratch buffer.
+
+The login-path is saved by mksession if sessionoptions includes globals. (See :h 'ssop').
+
 Make sure, that filetype is sql that is, in normal mode type
 `:filetype sql`
 
