@@ -165,7 +165,7 @@ func! mysql#ExecuteQuery() range
     " Prepare the query
     :write
     let l:queryCommand = ".!cat " . expand("%:p") . ' | awk "NR >= ' . a:firstline . ' && NR <= ' . a:lastline . '"'
-    let l:queryCommand = l:queryCommand . " | mysql --login-path=" . b:loginPath . ' --database=' . b:database . ' --table'
+    let l:queryCommand = l:queryCommand . " | mysql --login-path=" . b:loginPath . ' --database=' . b:database . ' --table --protocol=TCP'
 
     " Close old buffer and open a new one below
     silent! bdelete! mysql_result
